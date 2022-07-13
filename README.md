@@ -15,6 +15,6 @@ A tool to export the licenses in package.json from javascript projects into .csv
 
 ## QA
 - Q: Does it only works for JS repos? A: Yes
-- Q: It's saying "Error when trying to get licenses from...". What's happening? A: There's 2 possibilities: 1: The project's package.json needs to be at the root folder. You can provisionally move this file to the root folder ;)
+- Q: It says "Error when trying to get licenses from...". What's happening? A: There's 2 possibilities: 1: The project's package.json needs to be at the root folder. You can provisionally move this file to the root folder ;)
  2: The provided path is wrong or the folder doesn't exist  
 
