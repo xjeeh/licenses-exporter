@@ -1,45 +1,40 @@
-import { init } from "license-checker";
+import rimraf from "rimraf";
 import * as fs from "fs";
+import { init } from "license-checker";
+import * as config from "../repositories.json";
+import { IPackages } from "./interfaces";
 
-import * as repos from "../repositories.json";
+const { repositories, folder } = config;
 
-interface IPackages {
-    [index: string]: IPackage;
-}
+rimraf('./licenses/*', () => console.log("Finished cleaning the folder"));
 
-interface IPackage {
-    licenses: string;
-    repository: string;
-    publisher: string;
-    email: string;
-    patch: string;
-    licenseFile: string;
-}
-
-repos.map(path => {
-    init({ start: path }, async (err: Error, packages: IPackages) => {
-        if (err) {
-            console.log(`Error when trying to get licenses from ${path}: ${err}`);
-
-        } else {
-            let csvString = "Name, Version, License\n"
-            Object
-                .entries(packages)
-                .forEach((pack) => {
+repositories.map((path: string) => {
+    init(
+        { start: `${folder}/${path}` },
+        async (err: Error, packages: IPackages) => {
+            if (err) {
+                console.log(`Error when trying to get licenses from ${path}: ${err}`);
+            } else {
+                let csvString = "Name, Version, License\n";
+                Object.entries(packages).forEach((pack) => {
                     const { 0: fullName, 1: license } = pack;
-                    const separator = fullName.lastIndexOf("@")
+                    const separator = fullName.lastIndexOf("@");
                     const name = fullName.slice(0, separator);
-                    const version = fullName.slice(separator + 1, fullName.length)
+                    const version = fullName.slice(separator + 1, fullName.length);
                     const { licenses } = license;
                     csvString += `${name}, ${version}, ${licenses} \n`;
                 });
-
-            if (!fs.existsSync("licenses")) {
-                fs.mkdirSync("licenses");
+                if (!fs.existsSync("licenses")) {
+                    fs.mkdirSync("licenses");
+                }
+                const fileName = path.split("/")[path.split("/").length - 1];
+                fs.writeFileSync(
+                    `licenses/licenses-${fileName}.csv`,
+                    csvString,
+                    "utf-8"
+                );
+                console.log(`Exported ${fileName} licenses`);
             }
-            const fileName = path.split("/")[path.split("/").length - 1];
-            fs.writeFileSync(`licenses/licenses-${fileName}.csv`, csvString, 'utf-8');
-            console.log(`Exported ${fileName} licenses`);
         }
-    });
-})
+    );
+});
